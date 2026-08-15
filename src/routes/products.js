@@ -9,7 +9,7 @@ router.get('/catalog', async (req, res) => {
       SELECT p.* 
       FROM products p
       LEFT JOIN categories c ON p.category = c.name
-      ORDER BY COALESCE(c.displayOrder, 999) ASC, p.category ASC, p.name ASC
+      ORDER BY COALESCE(c.displayOrder, 999) ASC, p.displayOrder ASC
     `);
     const products = rows.map(p => ({
       id: p.id,
