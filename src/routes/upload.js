@@ -12,11 +12,11 @@ router.post('/', upload.single('image'), async (req, res) => {
       return res.status(400).json({ error: 'No image provided' });
     }
     
-    // Convert buffer to base64
-    const base64Image = req.file.buffer.toString('base64');
+    // Convert buffer to Blob for efficient multipart/form-data streaming
+    const blob = new Blob([req.file.buffer], { type: req.file.mimetype });
     
-    const formData = new URLSearchParams();
-    formData.append('image', base64Image);
+    const formData = new FormData();
+    formData.append('image', blob, req.file.originalname);
     
     // ImgBB API Key
     const API_KEY = 'e8e52b29816c9198b18db32862dc029d';
@@ -33,7 +33,7 @@ router.post('/', upload.single('image'), async (req, res) => {
       res.json({ success: true, imageUrl: data.data.url });
     } else {
       console.error('ImgBB Error:', data);
-      res.status(500).json({ error: 'Failed to upload to ImgBB' });
+      res.status(500).json({ error: 'Failed to upload to ImgBB', details: data });
     }
   } catch (error) {
     console.error('Error uploading image:', error);

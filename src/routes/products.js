@@ -52,6 +52,28 @@ router.get('/catalog', async (req, res) => {
   }
 });
 
+// ─── POST /api/products ──────────────────────────────────────────────────
+// Admin adds a new product
+router.post('/', async (req, res) => {
+  const { name, category, sellingPrice, oldPrice, discountPercent, stock, imageUrl, youtubeUrl } = req.body;
+  const id = Date.now().toString(36) + Math.random().toString(36).substr(2, 5); // simple unique id
+
+  try {
+    // Get max displayOrder in the category
+    const [rows] = await db.query('SELECT MAX(displayOrder) as maxOrder FROM products WHERE category = ?', [category]);
+    const displayOrder = (rows[0].maxOrder || 0) + 1;
+
+    await db.query(
+      'INSERT INTO products (id, productId, name, productName, category, sellingPrice, oldPrice, discountPercent, stock, imageUrl, youtubeUrl, displayOrder, inStock, quantity) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [id, id, name, name, category, sellingPrice || 0, oldPrice || null, discountPercent || 0, stock || 10000, imageUrl || null, youtubeUrl || null, displayOrder, 1, 1]
+    );
+    res.json({ success: true, product: { id, productId: id, name, productName: name, category, sellingPrice, oldPrice, discountPercent, stock, imageUrl, youtubeUrl, displayOrder, inStock: true } });
+  } catch (err) {
+    console.error('POST /api/products error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ─── PUT /api/products/catalog/:id ───────────────────────────────────────────
 // Admin updates a product's details in MySQL
 router.put('/catalog/:id', async (req, res) => {
